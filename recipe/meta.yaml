@@ -24,6 +24,10 @@ build:
 requirements:
   build:
     - python
+    # Build assuming cygwin or msys with bash and git are installed for now.  Would be
+    #     better to have this dependency in conda repositories.  See
+    #     https://github.com/conda-forge/staged-recipes/pull/208
+    # - cygwin  # for bash and make.  Should be replaced later with lighter MSYS2.
 
 test:
   files:
