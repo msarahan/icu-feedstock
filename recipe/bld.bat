@@ -1,54 +1,27 @@
-::if "%ARCH%"=="32" (
-::   set ARCH=Win32
-::   set COPYSUFFIX=
-::) else (
-::  set ARCH=x64
-::  set COPYSUFFIX=64
-::)
+cd source
 
-setlocal enabledelayedexpansion
+:: MSYS includes a link.exe that is not MSVC's linker.  Hide it.
+MOVE %LIBRARY_PREFIX%\usr\bin\link.exe %LIBRARY_PREFIX%\usr\bin\link.exe.backup
 
-:: line feed, see http://stackoverflow.com/a/5642300/1170370
-(SET LF=^
+set LIBRARY_PREFIX=%LIBRARY_PREFIX:\=/%
+set SRC_DIR=%SRC_DIR:\=/%
+set MSYSTEM=MINGW%ARCH%
+set MSYS2_PATH_TYPE=inherit
+set CHERE_INVOKING=1
 
-)
+bash -c "echo $PATH"
+bash -c "echo $(which link.exe)"
+bash runConfigureICU MSYS/MSVC --prefix=%LIBRARY_PREFIX% --enable-static
+if errorlevel 1 exit 1
+make
+if errorlevel 1 exit 1
+make check
+if errorlevel 1 exit 1
+make install
+if errorlevel 1 exit 1
 
-set "command=if [[ $(uname -s) =~ ^CYGWIN* ]]; then !LF!"
-set "command=!command!     PREFIX=$(cygpath %LIBRARY_PREFIX:\=\\%) !LF!"
-set "command=!command!else !LF!"
-set "command=!command!     PREFIX=%LIBRARY_PREFIX:\=/% !LF!"
-set "command=!command!fi !LF!"
+set LIBRARY_PREFIX=%LIBRARY_PREFIX:/=\%
 
-set "command=!command!OLD_LINK=$(which link) !LF!"
-set "command=!command!if [[ ${OLD_LINK} =~ *usr/bin* ]]; then !LF!"
-set "command=!command!    mv ${OLD_LINK} link_backup !LF!"
-set "command=!command!else !LF!"
-set "command=!command!    unset OLD_LINK !LF!"
-set "command=!command!fi !LF!"
-
-set "command=!command!if [[ $(uname -s) =~ ^CYGWIN* ]]; then !LF!"
-set "command=!command!     cd $(cygpath %SRC_DIR:\=\\%\\source)!LF!"
-set "command=!command!else !LF!"
-set "command=!command!     cd %SRC_DIR:\=/%/source!LF!"
-set "command=!command!fi !LF!"
-
-set "command=!command!./runConfigureICU Cygwin/MSVC --prefix=${PREFIX} --enable-static --disable-samples --disable-extras --disable-layout --disable-tests !LF!"
-
- set "command=!command!make && make check && make install !LF!"
-
-set "command=!command!if [[ -n ""$OLD_LINK"" ]]; then !LF!"
-set "command=!command!    mv link_backup ${OLD_LINK} !LF!"
-set "command=!command!fi !LF!"
-echo !command! > "bash_cmd.sh"
-
-endlocal
-
-bash.exe -x bash_cmd.sh
-
-:: msbuild source\allinone\allinone.sln /p:Configuration=Release;Platform=%ARCH%
-
-:: ROBOCOPY bin%COPYSUFFIX% %LIBRARY_BIN% *.dll /E
-:: ROBOCOPY lib%COPYSUFFIX% %LIBRARY_LIB% *.lib /E
-:: ROBOCOPY include %LIBRARY_inc% * /E
-
-:: if %ERRORLEVEL% LSS 8 exit 0
+:: Restore MSYS' link.exe
+MOVE %LIBRARY_PREFIX%\usr\bin\link.exe.backup %LIBRARY_PREFIX%\usr\bin\link.exe
+exit 0
