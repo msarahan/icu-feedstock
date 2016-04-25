@@ -8,9 +8,11 @@ set SRC_DIR=%SRC_DIR:\=/%
 set MSYSTEM=MINGW%ARCH%
 set MSYS2_PATH_TYPE=inherit
 set CHERE_INVOKING=1
+:: Set flag saying we have stdint.h manually.  We take care of providing it where
+::    it is needed, but missing, by using msinttypes
+set "CXXFLAGS=%CXXFLAGS% -DU_HAVE_STDINT_H=1"
+set "CFLAGS=%CFLAGS% -DU_HAVE_STDINT_H=1"
 
-bash -c "echo $PATH"
-bash -c "echo $(which link.exe)"
 bash runConfigureICU MSYS/MSVC --prefix=%LIBRARY_PREFIX% --enable-static
 if errorlevel 1 exit 1
 make
