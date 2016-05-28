@@ -12,6 +12,7 @@ source:
   patches:
     # include an extra header when using mingw
     - icu4c-4_9_1-mingw-w64-mkdir-compatibility.patch  # [win]
+    - 0001-fix-icudat.res-race-condition.patch
     # include stdint where appropriate (vs<2010) - do not depend on ICU's incomplete implementation
     # - stdint.patch                                     # [win and py<34]
 
