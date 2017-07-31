@@ -28,10 +28,12 @@ requirements:
     - python  # [win]
     - m2-base  # [win]
     - m2-make  # [win]
-    - toolchain
     - vc 9  # [win and py27]
     - vc 10  # [win and py34]
     - vc 14  # [win and py>=35]
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - libstdcxx_{{ target_platform }}  # [linux]
   run:
     - vc 9  # [win and py27]
     - vc 10  # [win and py34]
